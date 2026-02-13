@@ -1,0 +1,9 @@
+With switching and with 10000 simulations
+
+Mean velocity: 31.694951958683763
+Standard deviation: 5.815551522458121
+
+Without switching and with 10000 simulations
+
+Mean velocity: 0.3418479421896788
+Standard deviation: 0.6425568639154674

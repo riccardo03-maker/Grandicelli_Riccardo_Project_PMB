@@ -1,14 +1,6 @@
 import math
 import numpy as np
-import matplotlib.pyplot as plt
-from scipy.optimize import curve_fit
 from numba import njit
-
-temperature=310 #Kelvin
-k_on=670 #1/seconds
-k_off=130 #1/seconds
-delta_t=0.000001 #seconds
-D=40000 #nanometer^2/second
 
 @njit         #Python compiler, useful to have a faster code
 def force(x): #the first derivative of the potential
@@ -36,7 +28,7 @@ def potential(x): #the potential
   
 
 @njit  
-def metropolis_step_on(x, brownian):                          #integration step with check Metropolis-Hastings
+def metropolis_step_on(x, brownian, delta_t, D):                          #integration step with check Metropolis-Hastings
     y=x-(force(x)*delta_t*D)+(math.sqrt(2*D)*brownian)  #candidate y
     
     log_pi_ratio=potential(x)-potential(y)
@@ -53,16 +45,17 @@ def metropolis_step_on(x, brownian):                          #integration step 
       return x, True
 
 @njit
-def evolution(N, D): #evolves the system for N time steps
+def evolution_velocity(N, D_on, D_off, k_on, k_off, delta_t): #evolves the system for N time steps
   t=0
   x=3.0 #start from a minimum of the potential
+  D=D_on
   state=0 # 0 means potential on, 1 means potential off
 
   for i in range(N):
     brownian=np.random.normal(0, math.sqrt(delta_t))
 
     if(state==0):
-      x, not_accepted=metropolis_step_on(x, brownian)
+      x, not_accepted=metropolis_step_on(x, brownian, delta_t, D)
     if(not_accepted): #don't update position and time if the transition is not accepted
       continue
     if(state==1):
@@ -71,11 +64,11 @@ def evolution(N, D): #evolves the system for N time steps
 
     if(state==0 and np.random.uniform()<=k_off*delta_t):  #changes of state
       state=1
-      D=400
+      D=D_off
       continue
     if(state==1 and np.random.uniform()<=k_on*delta_t):
       state=0
-      D=40000
+      D=D_on
       continue
 
   velocity=x/t
@@ -83,27 +76,3 @@ def evolution(N, D): #evolves the system for N time steps
 
 def gaussian(x, amp, mu, sigma):      #Gaussian function for fit
     return amp*np.exp(-(x-mu)*(x-mu)/(2*sigma*sigma))
-
-
-# main
-
-np.random.seed(54)   #set seed for reproducibility
-velocities=np.zeros(10000) # use 100 velocities to draw an histogram
-for i in range(10000):
-  velocities[i]=evolution(10000000, D) #evolve for 10^7 time steps
-
-n, bins, _ =plt.hist(velocities, bins=80, density=True) #histogram of velocities
-centers = 0.5 * (bins[:-1] + bins[1:]) #take the central x for each bin
-
-initial_guess=[n.max(), np.mean(velocities), np.std(velocities)] #initial guess of the fit parameters
-
-amp, mu, sigma=curve_fit(gaussian, centers, n, p0=initial_guess)[0] #fit parameters
-
-plt.plot(centers, gaussian(centers, amp, mu, sigma))
-plt.title("Histogram of velocities with two-state system")
-plt.xlabel("Velocity (nm/s)")
-plt.ylabel("Count")
-plt.show()
-
-print("Mean velocity: " + str(mu))
-print("Standard deviation: " + str(sigma))

@@ -10,7 +10,6 @@ D_on=40000 #nanometer^2/second
 D_off=400 #nanometer^2/second
 
 
-np.random.seed(53)   #set seed for reproducibility
 position, time=evolution_position_time(N, D_on, D_off, k_on, k_off, delta_t) #evolve for 10^7 time steps
 
 plt.plot(time, position)

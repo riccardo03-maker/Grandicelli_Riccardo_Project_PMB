@@ -11,7 +11,6 @@ D_on=40000 #nanometer^2/second
 D_off=400 #nanometer^2/second
 
 
-np.random.seed(54)   #set seed for reproducibility
 velocities=np.zeros(100)
 for i in range(100):
   velocities[i]=evolution_velocity(N, D_on, D_off, k_on, k_off, delta_t) #evolve for 10^7 time steps

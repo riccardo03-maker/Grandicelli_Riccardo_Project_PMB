@@ -15,7 +15,7 @@ for i, k_on in enumerate(k_possible):
         velocities=np.zeros(100)
         for k in range(100):
             velocities[k]=evolution_velocity(N, D_on, D_off, k_on, k_off, delta_t) #evolve for 10^7 time steps
-        velocity_matrix[i, j]=np.mean(velocities)
+        velocity_matrix[i, j]=np.mean(velocities) #mean velocity for each couple of parameters
 
 plt.imshow(velocity_matrix, origin="lower", extent=[k_possible[0], k_possible[9], k_possible[0], k_possible[9]], aspect="auto")
 #creates a heatmap of velocities versus k_on and k_off
